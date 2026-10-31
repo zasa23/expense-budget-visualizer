@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Expense & Budget Visualizer — track spending with charts, monthly summaries, sorting, budgets, and dark mode." />
+  <title>Expense & Budget Visualizer</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Apply saved theme before first paint to avoid a flash -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('ebv_theme');
+        if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        else if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+        else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.setAttribute('data-theme', 'dark');
+        else document.documentElement.setAttribute('data-theme', 'light');
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-row">
+      <h1 class="app-title"><span class="logo-dot" aria-hidden="true"></span>Expense &amp; Budget Visualizer</h1>
+      <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle theme">
+        <span class="theme-icon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Balance / budget summary -->
+    <section class="card summary-card" aria-label="Balance summary">
+      <div class="summary-label">Total Balance</div>
+      <div id="totalBalance" class="summary-value">$0.00</div>
+
+      <div class="summary-meta">
+        <span class="meta-label">Spending Limit</span>
+        <div class="limit-control">
+          <input id="limitInput" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 500" aria-label="Spending limit" />
+          <button id="limitSave" type="button" class="btn btn-sm">Set</button>
+        </div>
+        <div id="limitStatus" class="limit-status"></div>
+        <div id="limitBarWrap" class="limit-bar-wrap hidden">
+          <div class="limit-bar"><div id="limitBarFill" class="limit-bar-fill"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chart + form -->
+    <section class="grid-two">
+      <div class="card chart-card">
+        <h2 class="card-title">Spending by Category</h2>
+        <div class="chart-wrap">
+          <canvas id="expenseChart" role="img" aria-label="Doughnut chart of spending by category"></canvas>
+        </div>
+        <div id="emptyChartHint" class="chart-hint hidden"></div>
+      </div>
+
+      <div class="card form-card">
+        <h2 class="card-title">Add Expense</h2>
+        <form id="expenseForm" novalidate>
+          <div class="field">
+            <label for="itemName">Item Name</label>
+            <input id="itemName" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Lunch" />
+          </div>
+          <div class="field">
+            <label for="itemAmount">Amount</label>
+            <input id="itemAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label for="itemCategory">Category</label>
+            <div class="category-row">
+              <select id="itemCategory" aria-label="Category"><option value="">Select…</option></select>
+              <button id="addCategoryBtn" type="button" class="btn btn-sm" title="Add custom category" aria-label="Add custom category">+</button>
+            </div>
+          </div>
+          <div id="newCategoryWrap" class="field hidden">
+            <label for="newCategory">New Category</label>
+            <div class="category-row">
+              <input id="newCategory" type="text" maxlength="24" autocomplete="off" placeholder="e.g. Bills" />
+              <button id="saveCategoryBtn" type="button" class="btn btn-sm">Add</button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Add Expense</button>
+          <p id="formError" class="form-error hidden" role="alert"></p>
+        </form>
+      </div>
+    </section>
+
+    <!-- Transactions -->
+    <section class="card list-card">
+      <div class="list-head">
+        <h2 class="card-title">Transactions</h2>
+        <div class="list-controls">
+          <label class="control">
+            <span class="control-label">Month</span>
+            <select id="monthFilter" aria-label="Filter by month"><option value="all">All months</option></select>
+          </label>
+          <label class="control">
+            <span class="control-label">Sort</span>
+            <select id="sortSelect" aria-label="Sort transactions">
+              <option value="date-desc">Newest first</option>
+              <option value="date-asc">Oldest first</option>
+              <option value="amount-desc">Amount: High → Low</option>
+              <option value="amount-asc">Amount: Low → High</option>
+              <option value="category-asc">Category A → Z</option>
+              <option value="category-desc">Category Z → A</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div id="monthSummary" class="month-summary hidden"></div>
+      <ul id="transactionList" class="transaction-list" aria-live="polite"></ul>
+      <div id="emptyListHint" class="list-hint">No transactions yet. Add one above.</div>
+    </section>
+  </main>
+
+  <footer class="app-footer"><small>Data is stored locally in your browser.</small></footer>
+</body>
+</html>
